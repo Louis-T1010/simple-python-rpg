@@ -12,7 +12,7 @@ class Game:
         self.get_x_and_y()
         self.player_location = self.game_map[self.player_y][self.player_x]
 
-        self.live(self.start())
+        # self.live(self.start())
 
     def live(self,player):
         while True:
@@ -29,24 +29,47 @@ class Game:
         self.get_x_and_y()
         while True:
             direction = input("what direction do you go:\n1: north\n2: east\n3: south\n4: west\nYour choice: ")
-            self.game_map[self.player_y][self.player_x] = self.player_x
-            if direction == "1":
-                self.player_y -= 1
-                self.game_map[self.player_y][self.player_x] = 'p'
-                self.map_init.print_map()
-            if direction == "2":
-                self.player_x -= 1
-                self.game_map[self.player_y][self.player_x] = 'p'
-                self.map_init.print_map()
-            if direction == "3":
-                self.player_y += 1
-                self.game_map[self.player_y][self.player_x] = 'p'
-                self.map_init.print_map()
-            if direction == "4":
-                self.player_x += 1
-                self.game_map[self.player_y][self.player_x] = 'p'
-                self.map_init.print_map()
-
+            while direction == "1":
+                if self.player_y > 0:
+                    self.game_map[self.player_y][self.player_x] = self.player_x
+                    self.player_y -= 1
+                    self.game_map[self.player_y][self.player_x] = 'p'
+                    self.map_init.print_map()
+                    break
+                else:
+                    print("can't go further north")
+                    self.map_init.print_map()
+                    break
+            while direction == "2":
+                if  self.player_x > 0:
+                    self.game_map[self.player_y][self.player_x] = self.player_x
+                    self.player_x -= 1
+                    self.game_map[self.player_y][self.player_x] = 'p'
+                    self.map_init.print_map()
+                    break
+                else:
+                    print("can't go further east")
+                    break
+            while direction == "3":
+                if  self.player_y < 9:
+                    self.game_map[self.player_y][self.player_x] = self.player_x
+                    self.player_y += 1
+                    self.game_map[self.player_y][self.player_x] = 'p'
+                    self.map_init.print_map()
+                    break
+                else:
+                    print("can't go further south")
+                    break
+            while direction == "4":
+                if self.player_x < 9:
+                    self.game_map[self.player_y][self.player_x] = self.player_x
+                    self.player_x += 1
+                    self.game_map[self.player_y][self.player_x] = 'p'
+                    self.map_init.print_map()
+                    break
+                else:
+                    print("can't go further west")
+                    break
             print(f"x = {self.player_x} and y = {self.player_y}")
 
     def get_x_and_y(self):
@@ -108,26 +131,27 @@ class Game:
 
 
     def start(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("welcome to the game")
-        ch_name = input("enter your name: ")
-        ch_gender=input("enter your gender: ")
-        ch_faction=input("enter your faction name: ")
-        ch_class = self.class_selector()
-        player = globals()[ch_class](ch_name, ch_gender, ch_faction)
-        feckless1 = Feckless()
-        print(f"{player.name} having awoken in a state of dismay finds themselves wondering the forest looking for a source of shelter, suddenly...")
-        print(f"Suddenly you're attacked by a {feckless1.name}, he seeks to strike what will you do?")
-        while player.health > 0 and feckless1.health > 0:
-            att_input = input("will you: \n1: Strike\n2: Flee\nYour choice: ")
-            if att_input == "activate god mode":
-                GodModeDebug.enable_godmode(player)
-            if att_input == "1":
-                Combat(player,feckless1)
-            elif att_input == "2":
-                print("you run away")
-                break        
-        return player
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("welcome to the game")
+            ch_name = input("enter your name: ")
+            ch_gender=input("enter your gender: ")
+            ch_faction=input("enter your faction name: ")
+            ch_class = self.class_selector()
+            player = globals()[ch_class](ch_name, ch_gender, ch_faction)
+            feckless1 = Feckless()
+            print(f"{player.name} having awoken in a state of dismay finds themselves wondering the forest looking for a source of shelter, suddenly...")
+            print(f"Suddenly you're attacked by a {feckless1.name}, he seeks to strike what will you do?")
+            while player.health > 0 and feckless1.health > 0:
+                att_input = input("will you: \n1: Strike\n2: Flee\nYour choice: ")
+                if att_input == "activate god mode":
+                    GodModeDebug.enable_godmode(player)
+                if att_input == "1":
+                    Combat(player,feckless1)
+                elif att_input == "2":
+                    print("you run away")
+                    break
+            return player
         
 
 class Character:
@@ -273,7 +297,7 @@ class Combat:
         self.enemy = enemy
         player.attack(enemy)
 
-# game = Game()
-# game_map = Map()
+game = Game()
+game_map = Map()
 # # game_map.print_map_to_file()
-# game.embark()
+game.embark()
