@@ -4,19 +4,26 @@ import os
 class Game:
     
     def __init__(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
         self.map_init = Map()
         self.game_map = self.map_init.get_game_map()
         self.game_map[4][2]='p'
-        self.player_x = 0
-        self.player_y = 0
-        self.get_x_and_y()
+        self.player_x = 2
+        self.player_y = 4
+        self.first_encounter = True
         self.player_location = self.game_map[self.player_y][self.player_x]
-
-        # self.live(self.start())
+        self.prev_location = self.player_location
+        self.player =Warrior("player", "male", "player faction")
+        # self.player = (self.start())
+        # self.live(self.player)
 
     def live(self,player):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        self.map_init.print_map()
+        if player.just_earned_victory:
+            print(player.victory_message)
         while True:
-            print(f"you are {player.name} health: {player.health} stamina: {player.stamina} ")
+            print(f"you are {player.name} health: {player.max_health} strength: {player.strength} dexterity: {player.dexterity} stamina: {player.max_health} available points: {player.points}")
             menu_choice = input("what do you do:\n1: Embark\n2: level up menu\n3: Rest\n4: Inventory\nYour choice: ")
             if menu_choice == "1":
                 self.embark()
@@ -24,12 +31,20 @@ class Game:
                 self.level_up_menu(player)
 
     def embark(self):
-        print(self.player_location)
-        self.map_init.print_map()
-        self.get_x_and_y()
         while True:
-            direction = input("what direction do you go:\n1: north\n2: east\n3: south\n4: west\nYour choice: ")
-            while direction == "1":
+            self.prev_location = self.game_map[self.player_y][self.player_x]
+            self.move()
+            print(f"x = {self.player_x} and y = {self.player_y}")
+
+    def move(self, flee=False):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        self.map_init.print_map()
+        while True:
+            if flee and self.first_encounter:
+                direction = "east"
+            else:
+                direction = self.get_choices("where to go...\n1: North\n2: East\n3: South\n4: West\n5: Back\nYour choice: ",["north","east","south","west","back"])
+            if direction == "north":
                 if self.player_y > 0:
                     self.game_map[self.player_y][self.player_x] = self.player_x
                     self.player_y -= 1
@@ -39,8 +54,8 @@ class Game:
                 else:
                     print("can't go further north")
                     self.map_init.print_map()
-                    break
-            while direction == "2":
+                    return False
+            if direction == "east":
                 if  self.player_x > 0:
                     self.game_map[self.player_y][self.player_x] = self.player_x
                     self.player_x -= 1
@@ -49,8 +64,8 @@ class Game:
                     break
                 else:
                     print("can't go further east")
-                    break
-            while direction == "3":
+                    return False
+            if direction == "south":
                 if  self.player_y < 9:
                     self.game_map[self.player_y][self.player_x] = self.player_x
                     self.player_y += 1
@@ -59,8 +74,8 @@ class Game:
                     break
                 else:
                     print("can't go further south")
-                    break
-            while direction == "4":
+                    return False
+            if direction == "west":
                 if self.player_x < 9:
                     self.game_map[self.player_y][self.player_x] = self.player_x
                     self.player_x += 1
@@ -69,31 +84,20 @@ class Game:
                     break
                 else:
                     print("can't go further west")
-                    break
-            print(f"x = {self.player_x} and y = {self.player_y}")
-
-    def get_x_and_y(self):
-        x = 0
-        y = 0
-        for row in self.game_map:
-            y+=1
-            for loc in row:
-                x += 1
-                if loc == 'p':
-                    x -= 1
-                    y -= 1
-                    self.player_x = x
-                    self.player_y = y
-                    print(f"x = {self.player_x} and y = {self.player_y}")
-                    break
-                if x == 10:
-                    x = 0
+                    return False
+            if direction == "prev":
+                self.game_map[self.player_y][self.player_x] = self.player_x
+                self.game_map[self.player_y][self.player_x] = 'p'
+                self.map_init.print_map()
+                break
+            if direction == "back":
+                self.live(self.player)
 
 
 
     def level_up_menu(self,player):
-        os.system('cls' if os.name == 'nt' else 'clear')
         while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
             print(f"current starts: health: {player.max_health} strength: {player.strength} dexterity: {player.dexterity} stamina: {player.max_health} available points: {player.points}")
             level_options = {"1": {"name": "Max health", "variable": "max_health"},
                              "2": {"name": "Strength", "variable":"strength"},
@@ -105,8 +109,10 @@ class Game:
                 self.live(player)
             elif level_choice:
                 current_level = getattr(player, level_options[level_choice]["variable"])
-                print(current_level)
-                level_amount = input(f"By how much do you want to raise your {level_options[level_choice]["variable"]}: ")
+                print(f"Current {level_options[level_choice]["name"]}: {current_level}")
+                level_amount = input(f"By how much do you want to raise your {level_options[level_choice]["variable"]} (enter 0 to go back): ")
+                if int(level_amount) == 0:
+                    continue
                 if  int(level_amount)<=player.points:
                     setattr(player, level_options[level_choice]["variable"], (current_level+int(level_amount)))
                     player.points -= int(level_amount)
@@ -120,6 +126,7 @@ class Game:
 
     @staticmethod
     def class_selector():
+        os.system('cls' if os.name == 'nt' else 'clear')
         while True:
             cl_input = input("choose class\n1: knight\n2: Warrior\nYour choice: ")
             if cl_input == "1":
@@ -134,25 +141,76 @@ class Game:
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
             print("welcome to the game")
-            ch_name = input("enter your name: ")
-            ch_gender=input("enter your gender: ")
-            ch_faction=input("enter your faction name: ")
-            ch_class = self.class_selector()
+            ch_name = self.get_non_empty_string("enter your name: ")
+            ch_gender = self.get_choices("select your gender\n1: Male\n2:Female\n3:Other\nYour choice: ",["male","female","other"])
+            ch_faction=self.get_non_empty_string("enter your faction name: ")
+            ch_class = self.get_choices("select your class\n1:Knight\n2:Warrior\nYour choice: ",["Knight","Warrior"])
             player = globals()[ch_class](ch_name, ch_gender, ch_faction)
             feckless1 = Feckless()
+            print(player)
             print(f"{player.name} having awoken in a state of dismay finds themselves wondering the forest looking for a source of shelter, suddenly...")
-            print(f"Suddenly you're attacked by a {feckless1.name}, he seeks to strike what will you do?")
-            while player.health > 0 and feckless1.health > 0:
-                att_input = input("will you: \n1: Strike\n2: Flee\nYour choice: ")
-                if att_input == "activate god mode":
-                    GodModeDebug.enable_godmode(player)
-                if att_input == "1":
-                    Combat(player,feckless1)
-                elif att_input == "2":
-                    print("you run away")
-                    break
+            self.enemy_encounter(player,feckless1)
             return player
-        
+
+    @staticmethod
+    def get_non_empty_string(prompt):
+        while True:
+            value = input(prompt).strip()
+            if value:
+                if len(value) > 10:
+                    print("please use less than 10 characters")
+                else:
+
+                    return value
+            else:
+                print("please enter a valid input")
+
+
+    @staticmethod
+    def get_choices(prompt, choices):
+        while True:
+                value = input(prompt).strip()
+                if value.isdigit():
+                    value = int(value)-1
+                    if 0 <= value < len(choices):
+                        selection = choices[value]
+                        print(f"selection: {selection}")
+                        if selection=="other":
+                            other_in = input("specify your option (more than one character): ").strip()
+                            if len(other_in) > 10:
+                                print("please use less than 10 characters")
+                            if len(other_in) > 1:
+                                return other_in
+                            else:
+                                print("input too short, try again")
+                                continue
+                        return selection
+                    else:
+                        print(f"please enter a number between 1 and {len(choices)}")
+                else:
+                    print("Enter a valid value")
+
+
+
+    def enemy_encounter(self, player, enemy):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        while True:
+            print(f"you are attacked by a {enemy.name}")
+            att_in = self.get_choices("What will you do\n1: Attack\n2: Flee\nYour choice: ",["attack","flee"])
+            print(att_in)
+            if att_in == "attack":
+                player.attack(enemy)
+                break
+            if att_in == "flee":
+                if self.first_encounter:
+                    self.move(True)
+                    break
+                if not self.move():
+                        print("You are unable to flee")
+
+
+
+
 
 class Character:
     def __init__(self, name, gender, faction, cl, base_health, base_strength, base_dexterity, base_stamina):
@@ -171,24 +229,29 @@ class Character:
         self.max_stamina = base_stamina
         self.stamina = base_stamina
         self.points = 0
+        self.just_earned_victory = False
+        self.victory_message = ""
     
     def __str__(self):
         return f"{self.name}, a {self.gender} {self.cl} and a member of the {self.faction} faction"
     
     def attack(self, target):
-        print(f"{self.name} attacks")
-        print(f"enemy health: {target.health}/{target.max_health}")
-        self.stamina -= 4
-        print(f"{self.name}'s stamina -4")
-        print(f"-{self.strength} health to enemy")
-        target.health = target.health-self.strength
-        if target.health <= 0:
-            print("enemy died")
-            self.points += target.points
-            print(f"victory! You have gained {target.points} level points")
-        else:
-            print(f"enemy health: {target.health}/{target.max_health}")        
-            target.attack(self)
+        while self.health > 0 and target.health > 0:
+            print(f"{self.name} attacks")
+            print(f"enemy health: {target.health}/{target.max_health}")
+            self.stamina -= 4
+            print(f"{self.name}'s stamina -4")
+            print(f"-{self.strength} health to enemy")
+            target.health = target.health-self.strength
+            if target.health <= 0:
+                self.just_earned_victory = True
+                print("enemy died")
+                self.points += target.points
+                self.victory_message = f"{target.name} died!\nvictory! You have gained {target.points} level points"
+                break
+            else:
+                print(f"enemy health: {target.health}/{target.max_health}")
+                target.attack(self)
             
 class Live:
     def __init__(self):
@@ -261,10 +324,8 @@ class Enemy:
         if target.health <= 0:
             print(f"{target.name} died")
             return "death"
-        else:       
+        else:
             print(f"{target.name}'s health: {target.health}/{target.max_health}")
-        print("")
-
 
 class Bear(Enemy):
     def __init__(self):
@@ -298,6 +359,6 @@ class Combat:
         player.attack(enemy)
 
 game = Game()
-game_map = Map()
-# # game_map.print_map_to_file()
+player = Warrior("player", "male", "player faction")
+enemy = Feckless()
 game.embark()
