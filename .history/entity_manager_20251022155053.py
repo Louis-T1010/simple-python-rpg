@@ -99,11 +99,10 @@ class Game:
 
 
     def level_up_menu(self,player):
-        not_enough_points = False        
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')            
-            if not_enough_points:
-                print("Not enough level up points")
+            not_enough_points = False
+            print("Not enough level up points")
             print(f"current starts: health: {player.max_health} strength: {player.strength} dexterity: {player.dexterity} stamina: {player.max_health} available points: {player.points}")
             level_options = {"1": {"name": "Max health", "variable": "max_health"},
                              "2": {"name": "Strength", "variable":"strength"},
@@ -111,16 +110,14 @@ class Game:
                              "4": {"name":"Max Stamina","variable":"max_stamina"},
                              "0":"back"}
             # level_choice = input(f"What will you level up?\n1: {level_options["1"]["name"]}\n2: {level_options["2"]["name"]}\n3: {level_options["3"]["name"]}\n4: {level_options["4"]["name"]}\n0: Back\nYour choice: ")
-            level_choice = self.get_choices(f"What will you level up?\n1: {level_options["1"]["name"]}\n2: {level_options["2"]["name"]}\n3: {level_options["3"]["name"]}\n4: {level_options["4"]["name"]}\n0: Back\nYour choice: ", [level_options["1"]["variable"],level_options["2"]["variable"], level_options["3"]["variable"], level_options["4"]["variable"]])
+            level_choice = self.get_choices("What will you level up?", [level_options["1"]["variable"],level_options["2"]["variable"], level_options["3"]["variable"], level_options["4"]["variable"]])
             if level_choice=="0":
                 self.live(player)
             elif level_choice:
                 current_level = getattr(player, level_choice)
-                print(f"Current {level_options.get(level_options)['name']}: {current_level}")
+                print(f"Current {level_choice}: {current_level}")
                 level_amount = input(f"By how much do you want to raise your {level_choice} (enter 0 to go back): ")
                 if int(level_amount) == 0:
-                    print(level_amount)
-                    not_enough_points = True
                     continue
                 if  int(level_amount)<=player.points:
                     setattr(player, level_choice, (current_level+int(level_amount)))

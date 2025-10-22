@@ -116,7 +116,7 @@ class Game:
                 self.live(player)
             elif level_choice:
                 current_level = getattr(player, level_choice)
-                print(f"Current {level_options.get(level_options)['name']}: {current_level}")
+                print(f"Current {level_choice}: {current_level}")
                 level_amount = input(f"By how much do you want to raise your {level_choice} (enter 0 to go back): ")
                 if int(level_amount) == 0:
                     print(level_amount)
